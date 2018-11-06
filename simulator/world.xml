@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This is a sample world setting. Feel free to copy and modify this file. To load a file of choice use:
+    java -jar RBSim2D.jar <filename>.xml
+
+To play a recorded simulation use:
+    java -jar RBSim2D.jar <filename>.rec
+
+Additional parameters:
+    -nooutput   Suppress output text messages.
+    -nogui      Run in console mode. No visualization.
+    -scale      Scales the size of the world.
+    -convert    Convert a .rec file to MP4 format.
+    -avi        Forces conversion of video to AVI format.
+
+Conversion:
+    When a simulation is recorded (by pressing F9 to start / stop recording), a non-standard
+    vector image format is used to store frames. The file can be converted to a standard video
+    file using -convert switch. By default MP4 file is created containing H.264 video stream.
+    Optionally, AVI format can be forced by using -avi switch. Video can be scaled by optional
+    -scale switch followed by scale factor. Scaled videos retain their original quality.
+	
+    java -jar RBSim2D <filename>.rec -convert [-avi] [-scale <factor>]
+	
+    Note: Conversion is done by a 3rd party software called FFmpeg. Make sure the package is
+          installed on your system and the 'ffmpeg' executable is in your path.
+
+TCP Connection:
+    Clients connect to the simulator using TCP connection. It is possible to connect manually
+    using telnet (e.g. 'telnet localhost 24980'). Once connected, a detailed help on all
+    available commands is provided by typing 'help'.
+
+Within application:
+    0 - 9       Select a robot.    
+    Arrow keys  Control the selected robot.
+    F5 / n      Reload definition file (useful when experimenting with world settings).
+    F6 / i      Display detailed information and tag objects.
+    F7 / m      Capture mouse. The client receives mouse movements and clicks.
+    F8 / s      Take snapshot.
+    F9 / r      Start / stop recording.
+    left click  Move object or world.
+    right click Rotate object.
+    wheel       Zoom.
+-->
+<world>
+    <!-- World properties. -->
+    <properties>
+        <frameRate>25</frameRate>   <!-- Higher values consume more processor time. -->
+        <tcpPort>24980</tcpPort>    <!-- TCP port clients connect to. It is also possible to use telnet. -->
+        <ppm>3</ppm>                <!-- Pixels per centimeter. -->
+        <width>200</width>          <!-- Window width - the world is infinite. -->
+        <height>200</height>        <!-- Window height. -->
+        <fontColor>255,255,255</fontColor>  <!-- Text color in RGB -->
+        <bgColor>80,80,80</bgColor>         <!-- Background (floor) color in RGB -->
+    </properties>
+
+    <!-- Definitions of objects. Distances are expressed in centimeters. -->
+    <objects>
+        <!-- A robot is a controllable object. -->
+        <robot name="robot">
+            <!-- Robot's body. -->
+            <body>
+                <!--
+                A body is defined as a composition of one or more shapes. A shape can be polygonal
+                or circular. Polygonal shape is defined as a convex hull of points positioned relative
+                to the given center. Units are in centimeters. To define a non-convex body use
+                compositions of convex shapes. Tags 'fill' and 'visible' are optional.
+                -->
+                <shape type="polygon" fill="yes" visible = "yes">
+                    <center>0,0</center>
+                    <outline>
+                        <point>-5,-5</point>
+                        <point>5,-5</point>
+                        <point>5,5</point>
+                        <point>0,8</point>
+                        <point>-5,5</point>
+                    </outline>
+                    <color>192,192,128</color>
+                </shape>
+                <!-- left wheel -->
+                <shape type="polygon" fill="yes">
+                    <center>-5,0</center>
+                    <outline>
+                        <point>0,-2</point>
+                        <point>-1,-2</point>
+                        <point>-1,2</point>
+                        <point>0,2</point>
+                    </outline>
+                    <color>0,0,0</color>
+                </shape>
+                <!-- right wheel -->
+                <shape type="polygon" fill="yes">
+                    <center>5,0</center>
+                    <outline>
+                        <point>0,-2</point>
+                        <point>1,-2</point>
+                        <point>1,2</point>
+                        <point>0,2</point>
+                    </outline>
+                    <color>0,0,0</color>
+                </shape>
+                <!--
+                It is possible to add images as shapes. If added to body it behaves as a rectangular
+                polygon. Size is specified in world units. Various image formats are supported. The
+                'color' element and 'fill' tag can be used to outline or fill transparent image areas.
+                <shape type="image">
+                    <center>0,0</center>
+                    <size>10,5</size>
+                    <source>image.png</source>
+                </shape>
+                -->
+            </body>
+            <!-- Textures are optional. We use it to color the robot's bumper differently. -->
+            <texture>
+                <shape type="polygon" fill="yes">
+                    <center>0,0</center>
+                    <outline>
+                        <point>5,5</point>
+                        <point>0,8</point>
+                        <point>-5,5</point>
+                    </outline>
+                    <color>160,160,128</color>
+                </shape>
+            </texture>
+            <!-- Physical properties. -->
+            <properties>
+                <density>20</density>               <!-- Mass of the body - kg per square meter. -->
+                <friction>1</friction>              <!-- Friction between bodies. -->
+                <!--
+                Damping is used as friction between the floor and the body.
+                For a robot high values are used to prevent the robot from gliding.
+                -->
+                <linearDamping>10</linearDamping>
+                <angularDamping>15</angularDamping>
+            </properties>
+            <placement>
+                <position>100,50</position>         <!-- Initial position. -->
+                <rotation>0</rotation>              <!-- Initial orientation in degrees. -->
+            </placement>
+            <!--
+            Robots must contain the following section. When power is applied to a wheel,
+            the specified force (in Newtons) is applied to the specified point of the
+            body each time frame. Higher frame rate therefore also results in higher robot
+            speeds. Damping factor must also be considered.
+            -->
+            <wheels>
+                <direction>90</direction>  <!-- Direction of forward movement relative to robot's orientation. -->
+                <left>
+                    <point>-5,0</point>    <!-- Mounting point of the left wheel's force. -->
+                    <force>0.5</force>     <!-- Force (in Newtons) on the left wheel (maximum motor power). -->
+                </left>
+                <right>
+                    <point>5,0</point>     <!-- Mounting point of the right wheel's force. -->
+                    <force>0.5</force>     <!-- Force (in Newtons) on the right wheel (maximum motor power). -->
+                </right>
+            </wheels>
+        </robot>
+        
+        <!--
+        A phantom is untouchable object that appears like a drawing on the floor.
+        Note that clients receive only bodies of objects, therefore a phantom drawn
+        using only the <texture> tag is not seen by clients. Moreover, visible
+        phantoms are seen as items by clients, following the fact that in a real
+        system a camera would not distinguish between a real object and a drawing.
+        -->
+        <phantom name="goal">
+            <body>
+                <shape type="polygon" fill="no">
+                    <center>0,0</center>
+                    <outline>
+                        <point>-10,-7</point>
+                        <point>10,-7</point>
+                        <point>10,7</point>
+                        <point>-10,7</point>
+                    </outline>
+                    <color>0,250,0</color>
+                </shape>
+            </body>
+            <texture>
+                <shape type="circle" fill="yes">
+                    <center>6,-3</center>
+                    <radius>2</radius>
+                    <color>0,200,0</color>
+                </shape>
+            </texture>
+            <placement>
+                <position>100,150</position>
+                <rotation>0</rotation>
+            </placement>
+        </phantom>
+
+        <!-- The box behind the goal. -->
+        <item name="box">
+            <body>
+                <shape type="polygon" fill="yes">
+                    <center>0,0</center>
+                    <outline>
+                        <point>-10,-7</point>
+                        <point>10,-7</point>
+                        <point>10,7</point>
+                        <point>-10,7</point>
+                    </outline>
+                    <color>200,130,100</color>
+                </shape>
+            </body>
+            <texture>
+                <shape type="circle" fill="yes">
+                    <center>6,-3</center>
+                    <radius>2</radius>
+                    <color>150,70,50</color>
+                </shape>
+            </texture>
+            <properties>
+                <density>10</density>
+                <friction>1</friction>
+                <linearDamping>10</linearDamping>
+                <angularDamping>10</angularDamping>
+            </properties>
+            <placement>
+                <position>130,100</position>
+                <rotation>45</rotation>
+            </placement>
+        </item>
+
+
+    </objects>
+</world>
